@@ -590,7 +590,7 @@ struct NpmView: View {
 
 struct NewTxtView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var directory = ""
+    @State private var directory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop").path
     @State private var fileName = ""
     @State private var message = ""
     @State private var success = false
