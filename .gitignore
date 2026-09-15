@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+
+# 构建产物
+MacFix.app/
+MacFixApp/build/
