@@ -115,6 +115,7 @@ enum Module: String, Identifiable, CaseIterable {
     case quicklook = "快速预览"
     case brew = "Homebrew"
     case npm = "npm 代理"
+    case newTxt = "新建文本文件"
 
     var id: String { rawValue }
 
@@ -124,6 +125,7 @@ enum Module: String, Identifiable, CaseIterable {
         case .quicklook: return "eye"
         case .brew: return "terminal"
         case .npm: return "shippingbox"
+        case .newTxt: return "doc.badge.plus"
         }
     }
 
@@ -133,6 +135,7 @@ enum Module: String, Identifiable, CaseIterable {
         case .quicklook: return "重置快速预览服务并重启访达"
         case .brew: return "通过代理测试连接并安装软件包"
         case .npm: return "通过代理管理全局 npm 包"
+        case .newTxt: return "在指定位置快速新建 txt 文档"
         }
     }
 }
@@ -179,6 +182,7 @@ struct HomeView: View {
             case .quicklook: QuickLookView()
             case .brew: BrewView()
             case .npm: NpmView()
+            case .newTxt: NewTxtView()
             }
         }
     }
@@ -579,6 +583,102 @@ struct NpmView: View {
             args.append(trimmed)
         }
         runner.run(scriptName: "npm_proxy_manager.sh", arguments: args, environment: proxyEnv)
+    }
+}
+
+// MARK: - 模块五：新建文本文件
+
+struct NewTxtView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var directory = ""
+    @State private var fileName = ""
+    @State private var message = ""
+    @State private var success = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            SheetHeader(title: "新建文本文件", symbol: "doc.badge.plus", desc: "在指定位置快速新建 txt 文档")
+
+            GroupBox("保存位置") {
+                HStack(spacing: 8) {
+                    TextField("选择或输入保存目录", text: $directory)
+                        .textFieldStyle(.roundedBorder)
+                    Button("选择…") { chooseDirectory() }
+                }
+                .padding(8)
+            }
+
+            GroupBox("文档名称") {
+                HStack(spacing: 8) {
+                    TextField("文档名称（可省略 .txt 后缀）", text: $fileName)
+                        .textFieldStyle(.roundedBorder)
+                    Text(".txt")
+                        .foregroundColor(.secondary)
+                }
+                .padding(8)
+            }
+
+            if !message.isEmpty {
+                Text(message)
+                    .foregroundColor(success ? .green : .red)
+                    .font(.callout)
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Spacer(minLength: 0)
+
+            HStack {
+                Button("创建") { createFile() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(directory.trimmed.isEmpty || fileName.trimmed.isEmpty)
+                Spacer()
+                Button("关闭") { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+            }
+        }
+        .padding(20)
+        .frame(minWidth: 480, minHeight: 340)
+    }
+
+    private func chooseDirectory() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.canCreateDirectories = true
+        panel.prompt = "选择"
+        if panel.runModal() == .OK {
+            directory = panel.url?.path ?? ""
+        }
+    }
+
+    private func createFile() {
+        var name = fileName.trimmed
+        if !name.lowercased().hasSuffix(".txt") {
+            name += ".txt"
+        }
+        let dir = directory.trimmed
+        var isDir: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: dir, isDirectory: &isDir), isDir.boolValue else {
+            message = "保存目录不存在：\(dir)"
+            success = false
+            return
+        }
+        let url = URL(fileURLWithPath: dir).appendingPathComponent(name)
+        if FileManager.default.fileExists(atPath: url.path) {
+            message = "已存在同名文件，未覆盖：\(url.path)"
+            success = false
+            return
+        }
+        do {
+            try Data().write(to: url)
+            message = "已创建：\(url.path)"
+            success = true
+        } catch {
+            message = "创建失败：\(error.localizedDescription)"
+            success = false
+        }
     }
 }
 
