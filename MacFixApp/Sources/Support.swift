@@ -135,7 +135,7 @@ enum Module: String, Identifiable, CaseIterable {
         case .quicklook: return "重置快速预览服务并重启访达"
         case .brew: return "通过代理测试连接并安装软件包"
         case .npm: return "通过代理管理全局 npm 包"
-        case .newTxt: return "在指定位置快速新建 txt 文档"
+        case .newTxt: return "在桌面快速新建 txt 文档"
         }
     }
 }
