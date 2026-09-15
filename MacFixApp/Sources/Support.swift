@@ -115,7 +115,7 @@ enum Module: String, Identifiable, CaseIterable {
     case quicklook = "快速预览"
     case brew = "Homebrew"
     case npm = "npm 代理"
-    case newTxt = "新建文本文件"
+    case newTxt = "新建txt在桌面"
 
     var id: String { rawValue }
 
