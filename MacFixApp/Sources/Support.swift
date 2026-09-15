@@ -671,14 +671,45 @@ struct NewTxtView: View {
             success = false
             return
         }
+
+        // 先尝试直接创建
         do {
             try Data().write(to: url)
             message = "已创建：\(url.path)"
             success = true
+            return
         } catch {
-            message = "创建失败：\(error.localizedDescription)"
+            // 权限不足时，尝试以管理员权限创建
+        }
+
+        if createWithAdminPrivileges(at: url.path) {
+            message = "已创建：\(url.path)"
+            success = true
+        } else {
+            message = "创建失败：未获得管理员权限（可能已取消授权）"
             success = false
         }
+    }
+
+    private func createWithAdminPrivileges(at path: String) -> Bool {
+        let command = "touch \(Self.shellEscaped(path))"
+        let script = "do shell script \"\(command)\" with administrator privileges"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", script]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
+    }
+
+    private static func shellEscaped(_ s: String) -> String {
+        "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 }
 
