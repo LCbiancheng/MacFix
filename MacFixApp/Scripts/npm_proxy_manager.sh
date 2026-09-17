@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# 扩展 PATH：从启动台双击启动时，进程不包含用户 shell 配置里的路径，
+# 这里补充常见 Node.js / Homebrew 安装位置，确保能找到 npm
+for d in \
+    "$HOME/.nvm/versions/node"/*/bin \
+    "$HOME/n/bin" \
+    "$HOME/.volta/bin" \
+    "$HOME/.local/bin" \
+    /opt/homebrew/bin \
+    /usr/local/bin; do
+    if [ -d "$d" ]; then
+        PATH="$d:$PATH"
+    fi
+done
+export PATH
+
 # ================= 配置区域 =================
 # 请确保你的代理软件已开启，且端口与下方一致
 PROXY_HOST="127.0.0.1"

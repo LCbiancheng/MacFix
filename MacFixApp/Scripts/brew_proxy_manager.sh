@@ -1,6 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+# 扩展 PATH：从启动台双击启动时，进程不包含用户 shell 配置里的路径，
+# 这里补充常见 Homebrew 安装位置，确保能找到 brew
+for d in /opt/homebrew/bin /usr/local/bin "$HOME/.local/bin"; do
+    if [ -d "$d" ]; then
+        PATH="$d:$PATH"
+    fi
+done
+export PATH
+
 # 通用 Homebrew 代理管理脚本
 # 用法:
 #   bash brew_proxy_manager.sh test
