@@ -151,31 +151,36 @@ struct HomeView: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Mac 工具箱")
-                    .font(.largeTitle)
-                    .bold()
-                Text("选择要处理的问题模块")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.top, 22)
+        ZStack {
+            backgroundImage
 
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(Module.allCases) { module in
-                    Button {
-                        selected = module
-                    } label: {
-                        ModuleCard(module: module)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+            VStack(alignment: .leading, spacing: 22) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Mac 工具箱")
+                        .font(.largeTitle)
+                        .bold()
+                    Text("选择要处理的问题模块")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
-            }
+                .padding(.top, 22)
 
-            Spacer(minLength: 0)
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(Module.allCases) { module in
+                        Button {
+                            selected = module
+                        } label: {
+                            ModuleCard(module: module)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(24)
         }
-        .padding(24)
+        .clipped()
         .sheet(item: $selected) { module in
             switch module {
             case .cache: CacheView()
@@ -184,6 +189,20 @@ struct HomeView: View {
             case .npm: NpmView()
             case .newTxt: NewTxtView()
             }
+        }
+    }
+
+    @ViewBuilder
+    private var backgroundImage: some View {
+        if let url = Bundle.main.url(forResource: "background_picture", withExtension: "jpeg"),
+           let image = NSImage(contentsOf: url) {
+            Image(nsImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+        } else {
+            Color(nsColor: .windowBackgroundColor)
         }
     }
 }

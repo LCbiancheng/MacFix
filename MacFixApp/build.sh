@@ -23,6 +23,9 @@ echo "==> 复制脚本"
 cp Scripts/*.sh "${CONTENTS}/Resources/Scripts/"
 chmod +x "${CONTENTS}/Resources/Scripts/"*.sh
 
+echo "==> 复制资源"
+cp Assets/* "${CONTENTS}/Resources/"
+
 echo "==> 复制 Info.plist"
 cp Info.plist "${CONTENTS}/Info.plist"
 

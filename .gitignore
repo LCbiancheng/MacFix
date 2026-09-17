@@ -5,3 +5,6 @@
 MacFix.app/
 MacFixApp/build/
 MacFix.dmg
+
+# 临时输入文件（根目录）
+/background_picture.jpeg
