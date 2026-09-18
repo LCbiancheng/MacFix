@@ -248,7 +248,7 @@ struct ModuleCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(hovering ? Color.accentColor.opacity(0.08) : Color(nsColor: .controlBackgroundColor))
+                .fill(hovering ? Color.accentColor.opacity(0.08) : Color.white)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -256,6 +256,7 @@ struct ModuleCard: View {
         )
         .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .onHover { hovering = $0 }
+        .environment(\.colorScheme, .light)
     }
 }
 
