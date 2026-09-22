@@ -324,6 +324,8 @@ struct CacheView: View {
 
     @State private var cacheSize = "计算中…"
     @State private var logSize = "计算中…"
+    @State private var jetBrainsSize = "计算中…"
+    @State private var includeJetBrains = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -351,12 +353,42 @@ struct CacheView: View {
                 .padding(8)
             }
 
+            GroupBox("JetBrains / IDEA 缓存") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("同时清理 JetBrains 缓存", isOn: $includeJetBrains)
+
+                    HStack {
+                        Text("~/Library/Caches/JetBrains")
+                            .font(.system(.body, design: .monospaced))
+                            .frame(width: 220, alignment: .leading)
+                        Text(jetBrainsSize).foregroundColor(.secondary)
+                        Spacer()
+                    }
+
+                    if includeJetBrains {
+                        Text("删除后 IDEA 的数据库与索引缓存会被清除，可能再次出现 “Storage corrupted” 等报错并需要重建缓存；若 IDEA 正在运行，请先退出。")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Text("保留可避免 IDEA 缓存损坏报错，该缓存当前占用空间见上。")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(8)
+            }
+
             LogView(runner: runner)
                 .frame(minHeight: 150)
 
             HStack {
                 Button("清理") {
-                    runner.run(scriptName: "clean_user_caches_logs.sh", arguments: ["--yes"])
+                    var args = ["--yes"]
+                    if includeJetBrains { args.append("--include-jetbrains") }
+                    runner.run(scriptName: "clean_user_caches_logs.sh", arguments: args)
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(runner.isRunning)
@@ -380,9 +412,11 @@ struct CacheView: View {
         DispatchQueue.global(qos: .userInitiated).async {
             let c = Self.dirSize(NSString(string: "~/Library/Caches").expandingTildeInPath)
             let l = Self.dirSize(NSString(string: "~/Library/Logs").expandingTildeInPath)
+            let j = Self.dirSize(NSString(string: "~/Library/Caches/JetBrains").expandingTildeInPath)
             DispatchQueue.main.async {
                 cacheSize = c
                 logSize = l
+                jetBrainsSize = j
             }
         }
     }
