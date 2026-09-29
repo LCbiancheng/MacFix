@@ -1,0 +1,19 @@
+[project]
+name = "macfix-agent"
+version = "0.1.0"
+description = "MacFix 智能助手后端服务（LangChain/LangGraph）"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sse-starlette>=2.1",
+    "langchain-core>=0.3",
+    "langchain-openai>=0.2",
+    "langgraph>=0.2",
+    "langgraph-checkpoint-sqlite>=2.0",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+]
+
+[tool.uv]
+package = false

@@ -144,43 +144,40 @@ enum Module: String, Identifiable, CaseIterable {
 
 struct HomeView: View {
     @State private var selected: Module?
-
-    private let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
-    ]
+    @State private var chatExpanded = false
+    @FocusState private var chatInputFocused: Bool
 
     var body: some View {
         ZStack {
             backgroundImage
 
-            VStack(alignment: .leading, spacing: 22) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Mac 工具箱")
-                        .font(.largeTitle)
-                        .bold()
-                    Text("选择要处理的问题模块")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top, 22)
+            VStack(alignment: .leading, spacing: 14) {
+                if !chatExpanded {
+                    ModuleBrowser(selected: $selected)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .layoutPriority(1)
+                        .transition(.move(edge: .top).combined(with: .opacity))
 
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(Module.allCases) { module in
-                        Button {
-                            selected = module
-                        } label: {
-                            ModuleCard(module: module)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
+                    Divider()
                 }
 
-                Spacer(minLength: 0)
+                AgentChatView(isExpanded: $chatExpanded, inputFocused: $chatInputFocused)
+                    .frame(maxWidth: .infinity)
+                    .frame(
+                        minHeight: chatExpanded ? 0 : 252,
+                        maxHeight: chatExpanded ? .infinity : 310
+                    )
             }
             .padding(24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .animation(.easeInOut(duration: 0.42), value: chatExpanded)
         }
         .clipped()
+        .onChange(of: chatInputFocused) { focused in
+            if focused && !chatExpanded {
+                withAnimation(.easeInOut(duration: 0.42)) { chatExpanded = true }
+            }
+        }
         .sheet(item: $selected) { module in
             switch module {
             case .cache: CacheView()
@@ -188,6 +185,52 @@ struct HomeView: View {
             case .brew: BrewView()
             case .npm: NpmView()
             case .newTxt: NewTxtView()
+            }
+        }
+    }
+
+    private struct ModuleBrowser: View {
+        @Binding var selected: Module?
+
+        private let columns = [
+            GridItem(.adaptive(minimum: 230), spacing: 14)
+        ]
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .bottom) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Mac 工具箱")
+                            .font(.system(size: 28, weight: .bold))
+                        Text("选择一个模块开始处理")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer(minLength: 12)
+
+                    Text("\(Module.allCases.count) 个工具")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.white.opacity(0.72))
+                        .clipShape(Capsule())
+                }
+
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 14) {
+                        ForEach(Module.allCases) { module in
+                            Button {
+                                selected = module
+                            } label: {
+                                ModuleCard(module: module)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
             }
         }
     }

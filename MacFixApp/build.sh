@@ -16,7 +16,7 @@ echo "==> 编译 Swift 源码"
 swiftc -O \
     -framework SwiftUI \
     -framework AppKit \
-    Sources/App.swift Sources/Support.swift \
+    Sources/App.swift Sources/Support.swift Sources/Agent/*.swift \
     -o "${CONTENTS}/MacOS/${APP_NAME}"
 
 echo "==> 复制脚本"
@@ -25,6 +25,18 @@ chmod +x "${CONTENTS}/Resources/Scripts/"*.sh
 
 echo "==> 复制资源"
 cp Resources/* "${CONTENTS}/Resources/"
+
+echo "==> 复制 Agent 后端"
+AGENT_SRC="../agent"
+if [ -d "${AGENT_SRC}/macfix_agent" ]; then
+    mkdir -p "${CONTENTS}/Resources/agent/macfix_agent"
+    cp -R "${AGENT_SRC}/macfix_agent/." "${CONTENTS}/Resources/agent/macfix_agent/"
+    cp "${AGENT_SRC}/pyproject.toml" "${CONTENTS}/Resources/agent/"
+    cp "${AGENT_SRC}/.python-version" "${CONTENTS}/Resources/agent/"
+    cp "${AGENT_SRC}/uv.lock" "${CONTENTS}/Resources/agent/"
+else
+    echo "警告：未找到 Agent 后端目录，跳过复制"
+fi
 
 echo "==> 复制 Info.plist"
 cp Info.plist "${CONTENTS}/Info.plist"
